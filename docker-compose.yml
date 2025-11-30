@@ -3,7 +3,8 @@ version: '3.8'
 services:
   # Бэкенд на Python
   backend:
-    build: ./backend
+    build:
+      context: ./backend
     container_name: hackathon_backend
     ports:
       - "8000:8000"
@@ -14,7 +15,8 @@ services:
 
   # Фронтенд на React + Nginx
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
     container_name: hackathon_frontend
     ports:
       - "3000:80" # Фронт будет доступен на порту 3000
