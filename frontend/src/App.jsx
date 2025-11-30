@@ -615,7 +615,7 @@ const ValidationScreen = ({ onBack, predictions }) => {
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
-  const handleFileChange = async (e) => {
+const handleFileChange = async (e) => {
       const file = e.target.files[0];
       if(!file) return;
 
@@ -623,11 +623,14 @@ const ValidationScreen = ({ onBack, predictions }) => {
       setError(null);
 
       const formData = new FormData();
+      
       formData.append('file', file);
-      // Отправляем предсказания, которые уже есть на фронте
-      formData.append('predictions_json', JSON.stringify(predictions));
+
+      const jsonBlob = new Blob([JSON.stringify(predictions)], { type: 'application/json' });
+      formData.append('predictions_file', jsonBlob, 'preds.json');
 
       try {
+
           const response = await fetch(`${API_URL}/validate`, {
               method: 'POST',
               body: formData
@@ -644,7 +647,7 @@ const ValidationScreen = ({ onBack, predictions }) => {
           setStep('upload');
       }
   };
-
+  
   if (step === 'upload') {
      return (
         <div className="w-full max-w-7xl mx-auto px-4 animate-fade-in">

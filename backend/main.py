@@ -5,24 +5,20 @@ import json
 import collections
 import joblib
 import sys
-
-try:
-    import multipart
-    multipart.multipart.MAX_MEMORY_PARAM = 256 * 1024 * 1024 
-    multipart.multipart.MAX_MEMORY_FILE = 256 * 1024 * 1024 
-except:
-    pass
-
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score, confusion_matrix
 
+try:
+    import multipart
+    multipart.multipart.MAX_MEMORY_PARAM = 256 * 1024 * 1024
+    multipart.multipart.MAX_MEMORY_FILE = 256 * 1024 * 1024
+except:
+    pass
 
 try:
     from preprocessing import preprocess_user_data
-    print("✅ Preprocessing успешно подключен.")
 except ImportError:
-    print("⚠️ Preprocessing не найден. Используем базовую очистку.")
     def preprocess_user_data(text): return str(text).lower()
 
 app = FastAPI()
@@ -38,29 +34,16 @@ app.add_middleware(
 model = None
 try:
     model = joblib.load('final_logreg_tfidf_model.pkl')
-    print("Модель загружена!")
 except Exception as e:
-    print(f"Ошибка загрузки модели: {e}")
-
-# ФУНКЦИИ
+    print(f"Model error: {e}")
 
 def decode_prediction(pred):
-    """
-    0 -> Neutral (Нейтрально)
-    1 -> Positive (Позитив)
-    2 -> Negative (Негатив)
-    """
     try:
         if hasattr(pred, 'item'): pred = pred.item()
         p = str(pred).lower().strip()
         
-        # 0 -> Neutral
         if p in ['0', '0.0', 'neutral', 'neu']: return 'neutral'
-        
-        # 1 -> Positive
         if p in ['1', '1.0', 'positive', 'pos']: return 'positive'
-        
-        # 2 -> Negative
         if p in ['2', '2.0', 'negative', 'neg', '-1']: return 'negative'
         
         return 'neutral'
@@ -75,7 +58,6 @@ def find_target_columns(df):
     text_col = None
     source_col = None
     
-    # Ищем текст
     for candidate in ['text', 'review', 'отзыв', 'текст', 'comment']:
         for col in df.columns:
             if candidate == col: text_col = col; break
@@ -85,7 +67,6 @@ def find_target_columns(df):
         for col in df.columns: 
             if 'text' in col or 'review' in col: text_col = col; break
     
-    # Ищем источник
     for candidate in ['src', 'source', 'platform', 'источник']:
         for col in df.columns:
             if candidate == col: source_col = col; break
@@ -94,7 +75,6 @@ def find_target_columns(df):
     return text_col, source_col
 
 def get_top_words(texts, n=5):
-
     if not texts: return []
     counter = collections.Counter()
     
@@ -116,7 +96,6 @@ def smart_read_file(contents, filename):
         return pd.read_excel(io.BytesIO(contents))
     return None
 
-# АНАЛИЗ
 @app.post("/analyze")
 async def analyze_file(file: UploadFile = File(...)):
     start_time = time.time()
@@ -125,14 +104,12 @@ async def analyze_file(file: UploadFile = File(...)):
         filename = file.filename.lower()
         
         df = smart_read_file(contents, filename)
-        if df is None: raise HTTPException(status_code=400, detail="Ошибка чтения файла")
+        if df is None: raise HTTPException(status_code=400, detail="Read Error")
             
         df = clean_column_names(df)
         text_col, source_col = find_target_columns(df)
         if not text_col: text_col = df.columns[0]
 
-        print(f"📥 Начало обработки {len(df)} строк...")
-        
         df = df.dropna(subset=[text_col])
         df[text_col] = df[text_col].astype(str)
         
@@ -160,7 +137,6 @@ async def analyze_file(file: UploadFile = File(...)):
                 "source": src.strip()
             })
 
-        # Статистика
         dist = collections.Counter(decoded_preds)
         src_counts = collections.Counter([r['source'] for r in reviews_data])
         total_src = sum(src_counts.values())
@@ -174,8 +150,6 @@ async def analyze_file(file: UploadFile = File(...)):
             "positive": get_top_words([clean_texts.iloc[i] for i, sent in enumerate(decoded_preds) if sent == 'positive']),
             "negative": get_top_words([clean_texts.iloc[i] for i, sent in enumerate(decoded_preds) if sent == 'negative'])
         }
-
-        print(f"Готово за {round(time.time() - start_time, 2)} сек.")
 
         return {
             "total_reviews": len(reviews_data),
@@ -192,19 +166,16 @@ async def analyze_file(file: UploadFile = File(...)):
 
     except Exception as e:
         print(f"Analyze Error: {e}")
-        import traceback
-        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/validate")
-async def validate_metrics(file: UploadFile = File(...), predictions_json: str = Form(...)):
+async def validate_metrics(file: UploadFile = File(...), predictions_file: UploadFile = File(...)):
     try:
-        # 1. Получаем предсказания
-        preds_data = json.loads(predictions_json)
+        pred_content = await predictions_file.read()
+        preds_data = json.loads(pred_content)
         y_pred = [p['sentiment'] for p in preds_data]
 
-        # 2. Читаем файл с ответами
         contents = await file.read()
         filename = file.filename.lower()
         df_true = smart_read_file(contents, filename)
@@ -217,8 +188,8 @@ async def validate_metrics(file: UploadFile = File(...), predictions_json: str =
         if not target_col: target_col = df_true.columns[1] if len(df_true.columns) > 1 else df_true.columns[0]
 
         min_len = min(len(y_pred), len(df_true))
-        
         y_pred = y_pred[:min_len]
+        
         raw_true = df_true[target_col].astype(str).str.lower().str.strip().tolist()[:min_len]
         y_true = [decode_prediction(x) for x in raw_true]
 
