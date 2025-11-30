@@ -39,6 +39,28 @@ Backend: Python 3.10, FastAPI, Pandas, Scikit-learn, Pymorphy3.
 1: Позитивный
 2: Негативный
 
+## Архитектура проекта
+
+WAZI/
+├── backend/ # Серверная часть (Python)
+│ ├── main.py # Основной серверный скрипт
+│ ├── preprocessing.py # Скрипт предварительной обработки данных
+│ ├── final_logreg_tfidf_model.pkl # Обученная модель
+│ ├── requirements.txt # Зависимости Python
+│ ├── Dockerfile # Dockerfile для backend
+│ └── top_emojis.json # Дополнительные данные
+├── frontend/ # Клиентская часть (React + Vite)
+│ ├── src/
+│ │ ├── main.jsx
+│ │ ├── App.jsx
+│ │ └── assets/ # Стили и изображения
+│ ├── public/ # Публичные файлы
+│ ├── package.json
+│ └── Dockerfile # Dockerfile для frontend
+├── docker-compose.yaml # Сборка и запуск всех сервисов через Docker Compose
+├── notebook_final.ipynb # Jupyter Notebook с экспериментами и обучением модели
+└── README.md
+
 ## Установка и запуск
 
 ### Требования
