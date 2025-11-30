@@ -865,7 +865,10 @@ export default function App() {
         </div>
         
         {/* ССЫЛКА НА РЕПОЗИТОРИЙ */}
-        <a href={REPO_LINK} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm font-semibold text-white/70 hover:text-[#ccff00] transition">
+        <a href= "https://github.com/woarrr/key-classifier"
+        target="_blank" rel="noreferrer" 
+        className="flex items-center gap-2 text-sm font-semibold text-white/70 hover:text-[#ccff00] transition"
+        >
           <Github size={18} />
           <span className="hidden md:inline">Репозиторий</span>
         </a>
