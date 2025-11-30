@@ -10,13 +10,12 @@ from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_sc
 
 # --- ПОДКЛЮЧЕНИЕ ПРЕДОБРАБОТКИ ---
 try:
-    # Импортируем функцию И список стоп-слов
     from preprocessing import preprocess_user_data, STOP_WORDS
-    print("✅ Preprocessing и STOP_WORDS успешно подключены.")
+    print("Preprocessing и STOP_WORDS успешно подключены.")
 except ImportError:
-    print("⚠️ Preprocessing не найден.")
+    print("Preprocessing не найден.")
     def preprocess_user_data(text): return str(text).lower()
-    STOP_WORDS = set() # Пустой сет, если импорт не удался
+    STOP_WORDS = set() 
 
 app = FastAPI()
 
@@ -32,9 +31,9 @@ app.add_middleware(
 model = None
 try:
     model = joblib.load('final_logreg_tfidf_model.pkl')
-    print("✅ Модель загружена!")
+    print("Модель загружена!")
 except Exception as e:
-    print(f"❌ Ошибка загрузки модели: {e}")
+    print(f"Ошибка загрузки модели: {e}")
 
 # --- ФУНКЦИИ ---
 
@@ -69,25 +68,18 @@ def find_target_columns(df):
 def get_top_words(texts, n=7):
     """
     Считает топ слов, ИСКЛЮЧАЯ мусорные слова из STOP_WORDS.
-    n=7 (берем чуть больше, чтобы было красиво)
     """
     if not texts: return []
     
     counter = collections.Counter()
-    # Берем выборку, если текстов очень много
     sample = texts if len(texts) < 5000 else texts[:5000]
     
     for t in sample:
-        # Текст уже лемматизирован в clean_texts
         words = str(t).split()
         for w in words:
-            # 1. Длина > 2
-            # 2. Нет в списке стоп-слов
-            # 3. Не является цифрой
             if len(w) > 2 and w not in STOP_WORDS and not w.isdigit():
                 counter[w] += 1
         
-    # Возвращаем список словарей
     return [{"word": w, "count": int(c)} for w, c in counter.most_common(n)]
 
 # --- ЧТЕНИЕ ФАЙЛА ---
@@ -155,7 +147,6 @@ async def analyze_file(file: UploadFile = File(...)):
                 source_dist.append({"name": k, "value": float(round((v / total_src) * 100, 1))})
 
         # --- ТОП СЛОВ (ФИЛЬТРАЦИЯ) ---
-        # Мы берем "clean_texts" (это леммы) и фильтруем их по категории
         pos_lemmas = [clean_texts.iloc[i] for i, sent in enumerate(decoded_preds) if sent == 'positive']
         neg_lemmas = [clean_texts.iloc[i] for i, sent in enumerate(decoded_preds) if sent == 'negative']
 
