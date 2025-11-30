@@ -106,8 +106,7 @@ npm run dev
 Модуль валидации: Позволяет сравнивать предсказания модели с эталонным датасетом (Golden Dataset) с расчетом метрик Macro-F1, Precision, Recall и Accuracy.
 Экспорт: Возможность скачивания размеченных данных в формате CSV.
 
-## Структура проекта
+## Ссылки
 
-
-
-ссылка на репозиторий: "https://github.com/woarrr/key-classifier">
+Ссылка на видео работы с моделью: https://drive.google.com/file/d/1_XV89L7WE-we0GP9jNJqZRvGNh3SJnKp/view?usp=sharing
+Ссылка на репозиторий: "https://github.com/woarrr/key-classifier">
