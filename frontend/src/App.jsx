@@ -3,16 +3,12 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recha
 import { Github, UploadCloud, Loader2, FileText, BarChart3, Download, Calculator, Edit3, Search, Filter, CheckCircle2, ArrowLeft, Check, X, BarChart2, PieChart as PieChartIcon, AlertCircle, ChevronDown, Save } from 'lucide-react';
 
 // ИМПОРТ ЛОГОТИПА
-// Убедись, что файл logo.png лежит в папке src
 import logoPng from './logo.png'; 
 
-// ==========================================
-// КОНФИГУРАЦИЯ
-// ==========================================
 const API_URL = "http://localhost:8000";
-const REPO_LINK = "https://github.com/Marina/Hackathon2025"; // Вставь свою ссылку
+const REPO_LINK = "https://github.com/Marina/Hackathon2025"; 
 
-// Цвета из твоего дизайна
+
 const COLORS = {
   lime: '#ccff00', 
   purple: '#b026ff',
@@ -22,10 +18,6 @@ const COLORS = {
 };
 
 const CHART_COLORS_LIST = [COLORS.lime, COLORS.purple, COLORS.red, '#3b82f6', '#f59e0b', '#10b981'];
-
-// ==========================================
-// ВСПОМОГАТЕЛЬНЫЕ КОМПОНЕНТЫ UI
-// ==========================================
 
 const MatrixCell = ({ value, row, col }) => {
     const isDiagonal = row === col;
@@ -41,7 +33,6 @@ const MatrixCell = ({ value, row, col }) => {
     );
 };
 
-// Бейдж тональности (для просмотра)
 const renderSentimentBadge = (sentiment) => {
     let styles = "";
     let label = "";
@@ -60,7 +51,7 @@ const renderSentimentBadge = (sentiment) => {
     );
 };
 
-// Селект тональности (для редактирования в таблице)
+// Селект тональности 
 const SentimentSelect = ({ sentiment, onChange }) => {
     const s = sentiment ? String(sentiment).toLowerCase() : 'neutral';
     let color = COLORS.purple;
@@ -86,8 +77,7 @@ const SentimentSelect = ({ sentiment, onChange }) => {
     );
 };
 
-// --- ВИЗУАЛИЗАЦИЯ (CHARTS) ---
-
+// ВИЗУАЛИЗАЦИЯ 
 const SentimentPieChart = ({ data }) => (
     <div className="flex-grow min-h-[250px] relative w-full h-full flex items-center justify-center">
         <ResponsiveContainer width="100%" height="100%">
@@ -178,9 +168,9 @@ const WordFrequencyList = ({ sentiment, data }) => {
 };
 
 
-// ==========================================
-// 1. ЭКРАН ЗАГРУЗКИ (UploadScreen)
-// ==========================================
+
+// ЭКРАН ЗАГРУЗКИ 
+
 const UploadScreen = ({ onUploadStart, error }) => {
   const fileInputRef = useRef(null);
 
@@ -242,9 +232,9 @@ const UploadScreen = ({ onUploadStart, error }) => {
   );
 };
 
-// ==========================================
-// 2. ЭКРАН ОЖИДАНИЯ (LoadingScreen)
-// ==========================================
+
+// 2. ЭКРАН ОЖИДАНИЯ 
+
 const LoadingScreen = ({ text = "Модель анализирует эмоциональный окрас текста..." }) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] w-full px-4">
@@ -259,14 +249,13 @@ const LoadingScreen = ({ text = "Модель анализирует эмоци�
 };
 
 
-// ==========================================
-// 3. ЭКРАН РЕЗУЛЬТАТОВ (Dashboard)
-// ==========================================
+
+// 3. ЭКРАН РЕЗУЛЬТАТОВ
+
 const ResultsScreen = ({ data, onOpenTable, onBackToUpload, onOpenValidation, onDownload }) => {
   const [showVisMenu, setShowVisMenu] = useState(false);
   const [currentVis, setCurrentVis] = useState('sentiment_pie'); 
   
-  // Рассчет графиков на лету (важно для обновления после редактирования)
   const sentimentChartData = useMemo(() => {
      const counts = { positive: 0, negative: 0, neutral: 0 };
      data.reviews.forEach(r => {
@@ -458,9 +447,9 @@ const ResultsScreen = ({ data, onOpenTable, onBackToUpload, onOpenValidation, on
   );
 };
 
-// ==========================================
-// 5. ТАБЛИЦА (TableScreen)
-// ==========================================
+
+// ТАБЛИЦА 
+
 const TableScreen = ({ data, onBack, onUpdateRow }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -471,7 +460,6 @@ const TableScreen = ({ data, onBack, onUpdateRow }) => {
   // ДИНАМИЧЕСКИЙ СПИСОК ИСТОЧНИКОВ
   const uniqueSources = useMemo(() => {
       const sources = new Set(data.reviews.map(r => r.source));
-      // Убираем "Unknown" если он там есть, чтобы добавить в конец, или сортируем
       return Array.from(sources).filter(s => s).sort();
   }, [data.reviews]);
 
@@ -618,9 +606,9 @@ const TableScreen = ({ data, onBack, onUpdateRow }) => {
   );
 };
 
-// ==========================================
-// 4. СТРАНИЦА: ВАЛИДАЦИЯ (ValidationScreen)
-// ==========================================
+
+// ВАЛИДАЦИЯ
+
 const ValidationScreen = ({ onBack, predictions }) => {
   const [step, setStep] = useState('upload'); 
   const [metrics, setMetrics] = useState(null);
@@ -777,9 +765,9 @@ const ValidationScreen = ({ onBack, predictions }) => {
   );
 };
 
-// ==========================================
+
 // ГЛАВНЫЙ КОМПОНЕНТ
-// ==========================================
+
 export default function App() {
   const [screen, setScreen] = useState('upload'); 
   const [analysisData, setAnalysisData] = useState(null);
@@ -812,12 +800,11 @@ export default function App() {
   const handleUpdateRow = (id, newSentiment) => {
       setAnalysisData(prev => {
           const newReviews = prev.reviews.map(r => r.id === id ? { ...r, sentiment: newSentiment } : r);
-          // Можно добавить отправку на сервер для дообучения в будущем
           return { ...prev, reviews: newReviews };
       });
   };
 
-  // ФУНКЦИЯ СКАЧИВАНИЯ (Исправленная)
+  // ФУНКЦИЯ СКАЧИВАНИЯ
   const handleDownloadCsv = () => {
     if (!analysisData?.reviews) return;
     
@@ -907,7 +894,6 @@ export default function App() {
         )}
       </main>
 
-       {/* Нижнее левое свечение */}
        <div className="fixed bottom-[-20%] left-[-20%] w-[50vw] h-[50vw] bg-[#6d28d9] rounded-full mix-blend-screen filter blur-[120px] opacity-20 pointer-events-none z-0"></div>
 
     </div>
